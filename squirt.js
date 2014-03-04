@@ -8,7 +8,7 @@
     readSize = 'size-medium';
 
     var script = document.createElement('script');
-    script.src = "//rawgithub.com/MHordecki/readability-redux/master/readability/readability.js";
+    script.src = "//rawgithub.com/cameron/squirt/master/readability.js";
     document.head.appendChild(script);
   })();
 
@@ -20,25 +20,15 @@
     document.head.appendChild(stylesheet);
   })();
 
-  (function waitForReadability() {
-    if(!document.getElementById('readabilityBody')){
-      setTimeout(waitForReadability, 100);
-      return;
-    }
-
-    // re-enable after readability disables
-    map(document.styleSheets, function(sheet){
-      if(sheet.href && sheet.href.indexOf('squirt.css') != -1) sheet.disabled = false;
-    });
-
+  document.addEventListener('readability.got-article', function(e){
     var text = '';
-    map(document.querySelector("#story").children, function(node) {
+    map(e.value.querySelector("#story").children, function(node) {
       if(node.tagName == 'P') text += node.textContent;
     });
 
     makeGUI();
     read(text);
-  })();
+  });
 
 })((function makeRead(textToNodes) {
   return function read(text) {
