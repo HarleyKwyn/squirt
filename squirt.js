@@ -8,14 +8,14 @@
     readSize = 'size-medium';
 
     var script = document.createElement('script');
-    script.src = "//raw.github.com/MHordecki/readability-redux/master/readability/readability.js";
+    script.src = "//rawgithub.com/MHordecki/readability-redux/master/readability/readability.js";
     document.head.appendChild(script);
   })();
 
   (function injectStyles() {
     var stylesheet = document.createElement('link');
     stylesheet.setAttribute('rel', 'stylesheet');
-    stylesheet.setAttribute('href', '//raw.github.com/cameron/squirt/master/squirt.css');
+    stylesheet.setAttribute('href', '//rawgithub.com/cameron/squirt/master/squirt.css');
     stylesheet.setAttribute('type', 'text/css');
     document.head.appendChild(stylesheet);
   })();
