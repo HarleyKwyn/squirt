@@ -1,9 +1,9 @@
 .squirt-window {
   position: fixed;
-  left: calc(50% - 200px);
-  top: calc(40% - 50px);
-  width: 400px;
-  height: 150px;
+  left: calc(50% - 250px);
+  top: calc(40% - 100px);
+  width: 500px;
+  height: 280px;
 
   font-size: 3em;
   background-color: #F6F6F6;
@@ -14,29 +14,68 @@
 
 }
 
-.word-port {
+.word-port{
+  border-bottom: 1px solid rgba(0,0,0, .4);
+  width: 420px;
+  margin: 40px;
+  height: 90px;
+}
+
+.word-center {
   position: absolute;
   left: 45%;
-  top: 15px;
+  top: 40px;
+}
+
+.focus-indicator {
+  font-size: .3em;
+  position: absolute;
+  top: 66px;
+  border-left: 1px solid rgba(0,0,0, .4);
+  height:24px;
+  width: 1px;
 }
 
 .controls {
-  padding-top: 2em;   
+  font-family: "Helvetica Neue", "Arial", sans-serif;
+  padding-top: 2px;   
+  font-size:.4em;
+  text-align: center;
+  color: #888;
 }
 
 .controls select {
-  margin: 0 auto;
-  display: block;
-  font-size: .35em;
-  color: #555;
+  margin: 0 .5em;
+  display: inline;
+  font-size: .8em;
   border-color: rgba(0,0,0,.2);
+  color: #444;
+  rgba(200, 225, 255, 1);
 }
 
+.controls a{
+  margin: 0 .25em;
+  color: rgba(37, 127, 218, 0.86);
+  background-color: rgba(200, 227, 255, 1);
+  border-radius: 4px;
+  padding: 2px 4px;
+  text-decoration: none;
+}
+
+.controls a:hover{
+  color: rgba(255, 255, 255, .8);
+  background-color: rgba(150, 175, 200, 1);
+}
+
+.jump-links{
+  margin-top: .7em;
+}
+
+
 .orp{
-  color: red;
+  color: #6699CC;
 }
 
 .word{
   position: absolute;
-  
 }
