@@ -32,7 +32,7 @@
     });
 
     var text = '';
-    map(container.children, function(node) {
+    map(document.querySelector("#story").children, function(node) {
       if(node.tagName == 'P') text += node.textContent;
     });
 
