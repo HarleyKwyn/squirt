@@ -1,6 +1,6 @@
 # Squirt
 
-A mashup of [Spritz](http://spritzinc.com)'s ORP speed reading technique and the [Readability](www.readability.com) bookmarklet.
+A mashup of [Spritz](http://spritzinc.com)'s ORP speed reading technique and the [Readability](http://www.readability.com) bookmarklet.
 
 # Install
 
