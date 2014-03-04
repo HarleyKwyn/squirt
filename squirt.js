@@ -8,14 +8,14 @@
     readSize = 'size-medium';
 
     var script = document.createElement('script');
-    script.src = "https://raw.github.com/MHordecki/readability-redux/master/readability/readability.js";
+    script.src = "//raw.github.com/MHordecki/readability-redux/master/readability/readability.js";
     document.head.appendChild(script);
   })();
 
   (function injectStyles() {
     var stylesheet = document.createElement('link');
     stylesheet.setAttribute('rel', 'stylesheet');
-    stylesheet.setAttribute('href', '//rawgithub.com/cameron/8dbe4de7a677581ff074/raw/squirt.css');
+    stylesheet.setAttribute('href', '//raw.github.com/cameron/squirt/master/squirt.css');
     stylesheet.setAttribute('type', 'text/css');
     document.head.appendChild(stylesheet);
   })();
@@ -25,14 +25,13 @@
       setTimeout(waitForReadability, 100);
       return;
     }
-    var container = document.getElementById('story');
-    var text = '';
 
     // re-enable after readability disables
     map(document.styleSheets, function(sheet){
-      if(sheet.href.indexOf('squirt.css') != -1) sheet.disabled = false;
+      if(sheet.href && sheet.href.indexOf('squirt.css') != -1) sheet.disabled = false;
     });
 
+    var text = '';
     map(container.children, function(node) {
       if(node.tagName == 'P') text += node.textContent;
     });
