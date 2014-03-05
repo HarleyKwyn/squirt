@@ -8,7 +8,9 @@
     readSize = 'size-medium';
 
     var script = document.createElement('script');
-    script.src = "//rawgithub.com/cameron/squirt/master/readability.js";
+    script.src = window.location.hostname == 'localhost' ?
+      '/readability.js' :
+      '//rawgithub.com/cameron/squirt/master/readability.js';
     document.head.appendChild(script);
   })();
 
