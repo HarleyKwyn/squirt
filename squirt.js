@@ -1,35 +1,33 @@
 (function makeSquirt(read, makeGUI) {
   var map = Function.prototype.call.bind(Array.prototype.map);
 
-  (function injectReadability() {
-    // set readability globals
-    readStyle = 'style-newspaper';
-    readMargin = 'margin-medium';
-    readSize = 'size-medium';
+  (function injectAssets(){
+    var makeEl = function(type, attrs, parent) {
+      var el = document.createElement(type);
+      for(var k in attrs){
+        if(!attrs.hasOwnProperty(k)) continue;
+        el.setAttribute(k, attrs[k]);
+      }
+      parent && parent.appendChild(el);
+      return el;
+    };
+    var host = window.location.hostname == 'localhost' ? '/' :
+      '//rawgithub.com/cameron/squirt/master/';
 
-    var script = document.createElement('script');
-    script.src = window.location.hostname == 'localhost' ?
-      '/readability.js' :
-      '//rawgithub.com/cameron/squirt/master/readability.js';
-    document.head.appendChild(script);
-  })();
+    makeEl('script', {
+      src: host + 'readability.js'
+    }, document.head);
 
-  (function injectStyles() {
-    var stylesheet = document.createElement('link');
-    stylesheet.setAttribute('rel', 'stylesheet');
-    stylesheet.setAttribute('href', '//rawgithub.com/cameron/squirt/master/squirt.css');
-    stylesheet.setAttribute('type', 'text/css');
-    document.head.appendChild(stylesheet);
+    makeEl('link', {
+      rel: 'stylesheet',
+      href: host + 'squirt.css',
+      type: 'text/css'
+    }, document.head);
   })();
 
   document.addEventListener('readability.got-article', function(e){
-    var text = '';
-    map(e.value.querySelector("#story").children, function(node) {
-      if(node.tagName == 'P') text += node.textContent;
-    });
-
     makeGUI();
-    read(text);
+    read(e.value.textContent);
   });
 
 })((function makeRead(textToNodes) {
@@ -94,7 +92,7 @@
 
 })((function makeTextToNodes(wordToNode) {
   return function textToNodes(text) {
-    return text.split(' ')
+    return text.replace('\n', ' ').split(' ')
            .map(function(word){
              var words = word.split('.');
              if(words.length > 1) words[0] += '.';
@@ -104,6 +102,7 @@
            .reduce(function(left, right){
              return left.concat(right[0]);
            }, [])
+           .filter(function(word){ return word.length; })
            .map(wordToNode);
   };
 
