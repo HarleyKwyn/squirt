@@ -26,3 +26,4 @@ Drag <a href="javascript:(function(){s = document.createElement('script'); s.src
 - single 10s back button
 - page obscuration (w/blur?)
 - mobile
+- selection

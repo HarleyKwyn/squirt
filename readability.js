@@ -38,28 +38,6 @@ var readability = {
     prevLink:              /(prev|earl|old|new|<|«)/i
   },
 
-  /**
-   * Readability Workflow:
-   *  1. Prep the document by removing script tags, css, etc.
-   *  2. Build readability's DOM tree.
-   *  3. Grab the article content from the current dom tree.
-   *  4. Replace the current DOM tree with the new one.
-   *  5. Read peacefully.
-   **/
-  init: function() {
-    readability.parsedPages[window.location.href.replace(/\/$/, '')] = true;
-
-    var nextPageLink = readability.findNextPageLink(document.body);
-
-    var articleTitle   = readability.getArticleTitle();
-    var articleContent = readability.grabArticle();
-
-    var evt = new Event("readability.got-article");
-    evt.value = articleContent;
-    document.dispatchEvent(evt);
-    return;
-  },
-
   // Get the article title as an H1.
   getArticleTitle: function () {
     var curTitle = "",
@@ -211,11 +189,11 @@ var readability = {
    *
    * @return Element
    **/
-  grabArticle: function (page) {
+  grabArticle: function () {
     var stripUnlikelyCandidates = readability.flagIsActive(readability.FLAG_STRIP_UNLIKELYS),
         isPaging = (page !== null) ? true: false;
 
-    page = page ? page : document.body.cloneNode(true);
+    var page = document.body.cloneNode(true);
 
     var pageCacheHtml = page.innerHTML;
 
@@ -1126,4 +1104,4 @@ var readability = {
     }
 };
 
-readability.init();
+document.dispatchEvent(new Event('readability.ready'));
