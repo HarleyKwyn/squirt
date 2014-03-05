@@ -4,17 +4,11 @@ A mashup of [Spritz](http://spritzinc.com)'s ORP speed reading technique and the
 
 # Install
 
-### Mobile
-
-Create a bookmark and paste the following JavaScript into the URL field:
+Create a bookmarklet with the following JavaScript:
 
 ```JavaScript
-javascript:(function(){ s = document.createElement('script'); s.src = '//raw.github.com/cameron/squirt/master/squirt.js'; document.body.appendChild(s); }()
+javascript:(function(){if(window.squirt){return document.dispatchEvent(new Event('squirt.again'));}var s=document.createElement('script');s.src='//rawgithub.com/cameron/squirt/master/squirt.js';document.body.appendChild(s)})()
 ```
-
-### Desktop
-
-Drag <a href="javascript:(function(){s = document.createElement('script'); s.src = '//raw.github.com/cameron/squirt/master/squirt.js'; document.body.appendChild(s);}()">Squirt</a> to your bookmark bar, navigate to an article you'd like to read, and click the bookmarklet.
 
 # Roadmap
 
