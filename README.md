@@ -21,3 +21,8 @@ Drag <a href="javascript:(function(){s = document.createElement('script'); s.src
 - progress bar / scrubber
 - zomg: eye tracking + auto-pause on look-away
 - total words read / total time display at end
+- red letter
+- pause button
+- single 10s back button
+- page obscuration (w/blur?)
+- mobile
