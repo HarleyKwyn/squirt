@@ -58,7 +58,9 @@ var squirt = {};
       var waitAfterPeriod = 3;
       var lastChar, delay;
       var container = document.querySelector('.word-center');
-      container.innerHTML = '';
+      map(container.children, function(child){
+        child.classList.contains('word') && child.remove();
+      });
       var jumped = false;
       var postJumpDelay = 1;
 
@@ -128,8 +130,7 @@ var squirt = {};
   }
 
   function wordToNode(word) {
-    var node = document.createElement('div');
-    node.classList.add('word');
+    var node = makeDiv({'class': 'word'});
     var span;
 
     var centerOnCharIdx =
@@ -139,9 +140,8 @@ var squirt = {};
               Math.floor(word.length / 2) - 1));
 
     word.split('').map(function(char, idx) {
-      span = document.createElement('span');
+      span = makeEl('span', {}, node);
       span.textContent = char;
-      node.appendChild(span);
       if(idx == centerOnCharIdx) span.classList.add('orp');
     });
 
@@ -167,7 +167,7 @@ var squirt = {};
 
   function blur(){
     map(document.body.children, function(node){
-      if(!node.id == 'squirt')
+      if(node.id != 'squirt')
         node.classList.add('squirt-blur');
     });
   };
