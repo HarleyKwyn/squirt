@@ -36,6 +36,7 @@ var squirt = {};
 
   function makeRead(textToNodes) {
     return function read(text) {
+      scrollTo(document.body, 1);
       var nodes = textToNodes(text);
       var lastNode = null;
       var timeoutId;
