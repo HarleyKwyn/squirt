@@ -18,10 +18,10 @@
 
 .squirt-modal {
   position: fixed;
-  left: calc(50% - 250px);
-  top: calc(40% - 100px);
-  width: 500px;
-  height: 280px;
+  left: 0;
+  top: 30%;
+  width: 100%;
+  height: 400px;
 
   font-size: 3em;
   background-color: #F6F6F6;
@@ -32,68 +32,126 @@
   z-index: 99999999999999999999999;
 }
 
-.word-port{
-  border-bottom: 1px solid rgba(0,0,0, .4);
-  width: 420px;
-  margin: 40px;
-  height: 90px;
+.word-port {
+    width: 80%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .word-center {
   position: absolute;
-  left: 45%;
-  top: 40px;
+  left: 35%;
+  top: 34%;
+  height: 100%
 }
 
 .focus-indicator {
-  font-size: .3em;
-  position: absolute;
-  top: 66px;
   border-left: 1px solid rgba(0,0,0, .4);
-  height:24px;
+  position: absolute;
   width: 1px;
+  display: block;
+  height: 100%;
+  top: -34%;
+  border-color: rgba(0,0,0, .2);
 }
 
 .controls {
   font-family: "Helvetica Neue", "Arial", sans-serif;
-  padding-top: 2px;   
-  font-size:.4em;
+  font-size: 40%;
   text-align: center;
-  color: #888;
+  color: rgba(0,0,0, .4);
+  font-weight: bold;
+  position: absolute;
+  left: 80%;
+  height: 100%;
+  width: 20%;
+  top: 0;
 }
 
-.controls select {
-  margin: 0 .5em;
-  display: inline;
-  font-size: .8em;
-  border-color: rgba(0,0,0,.2);
-  color: #444;
-  rgba(200, 225, 255, 1);
+.control {
+  cursor: pointer;
+  margin: 0;
+  background-color: rgba(255, 255, 255, .8);
+  height: 32.7%;
+  margin-bottom: 2%;
 }
 
-.controls a{
-  margin: 0 .25em;
-  color: rgba(37, 127, 218, 0.86);
-  background-color: rgba(200, 227, 255, 1);
-  border-radius: 4px;
-  padding: 2px 4px;
+.control:hover {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.control:active {
+  background-color: rgba(255, 255, 255, .6);
+}
+
+.controls a, select{
   text-decoration: none;
+  color: inherit;
+  display:block;
+  margin: 29% auto;
+  cursor: pointer;
 }
 
-.controls a:hover{
-  color: rgba(255, 255, 255, .8);
-  background-color: rgba(150, 175, 200, 1);
+.wpm-selector {
+  height: 100%;
+  position: absolute;
+  top:0;
+  left: -400%;
+  width: 401%;
 }
 
-.jump-links{
-  margin-top: .7em;
+.wpm-option {
+  margin: 0 .5% .5% 0;
+  width: 32.75%; 
+  height: 32.7%;
+  float: left;
+  background-color: rgba(255, 255, 255, 1);
+  cursor: pointer;
 }
+
+.wpm-option:hover, .wpm-option:active {
+  background-color: #EFEFEF;
+}
+
+.wpm-option a {
+  margin: 22.3% auto;
+  pointer-events: none;
+  font-size: 1.4em;
+}
+
+.control.wpm div{
+  font-size: .8em;
+}
+
 
 
 .orp{
-  color: #6699CC;
+  color: rgb(238, 69, 69);
 }
 
 .word{
   position: absolute;
+  font-size: 1.2em;
+  background-color: #F6F6F6;
+  padding: 15px;
+}
+
+/* Mobile */
+
+@media only screen 
+and (min-device-width : 320px) 
+and (max-device-width : 568px) 
+and (orientation: landscape){
+ .squirt-modal {
+   border-radius: 0;
+   width: 100%;
+   height: 80%;
+   top: 20%;
+   left: 0;
+ } 
+
+ .control {
+  height: 32.3%;
+ }
 }

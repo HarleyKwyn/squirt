@@ -4,17 +4,13 @@ var squirt = {};
     var host = window.location.hostname == 'localhost' ? '/' :
       '//rawgithub.com/cameron/squirt/master/';
 
-    makeEl('link', {
-      rel: 'stylesheet',
-      href: host + 'squirt.css',
-      type: 'text/css'
-    }, document.head);
-
-    document.addEventListener('squirt.again', function(){
-      startSquirt();
-    });
-
+    injectStylesheet(host + 'squirt.css')
+    injectStylesheet('//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css');
     makeGUI();
+    startSquirt();
+
+    on('squirt.again', startSquirt);
+
     function startSquirt(){
       showGUI();
       var selection = window.getSelection();
@@ -27,25 +23,22 @@ var squirt = {};
           return container.textContent;
         })());
       }
-      function readabilize(){
-        read(readability.grabArticle().textContent);
-      }
+      function readabilize(){ read(readability.grabArticle().textContent); }
       if(!window.readability){
         makeEl('script', {
           src: host + 'readability.js'
         }, document.head);
-        return document.addEventListener('readability.ready', readabilize);
+        return on('readability.ready', readabilize);
       }
       readabilize();
     };
-    startSquirt();
   })(makeRead(makeTextToNodes(wordToNode)), makeGUI);
 
   function makeRead(textToNodes) {
     return function read(text) {
       var nodes = textToNodes(text);
       var lastNode = null;
-
+      var timeoutId;
       var nodeIdx = 0;
       var incrememntNodeIdx = function(increment){
         var ret = nodeIdx;
@@ -53,7 +46,6 @@ var squirt = {};
         nodeIdx = Math.max(0, nodeIdx);
         return ret;
       }
-      var ms, timeoutId;
       var waitAfterComma = 2;
       var waitAfterPeriod = 3;
       var lastChar, delay;
@@ -63,22 +55,30 @@ var squirt = {};
       });
       var jumped = false;
       var postJumpDelay = 1;
+      var paused = false;
 
-      var wpm = function(wpm){
-        ms = 60 * 1000 / wpm ;
-      }
-      wpm(document.querySelector('#wpm').value);
-
-      document.addEventListener('squirt.close', function(){
+      on('squirt.close', function(){
         clearTimeout(timeoutId);
       });
 
-      document.addEventListener('squirt.wpm', function(e){
+      var ms;
+      var wpm = function(wpm){
+        ms = 60 * 1000 / wpm ;
+      }
+      on('squirt.wpm', function(e){
         wpm(e.value);
       });
 
-      document.addEventListener('squirt.jump-back', function(e){
-        // Jump back by `e.value` seconds. Then walk back to the
+      on('squirt.pause', function(){
+        paused = true;
+      });
+
+      on('squirt.play', play);
+
+      dispatch('squirt.wpm', {value: 400});
+
+      on('squirt.rewind', function(e){
+        // Rewind by `e.value` seconds. Then walk back to the
         // beginning of the sentence.
         if(e.value == -1) nodeIdx = 0;
         else {
@@ -90,28 +90,40 @@ var squirt = {};
         }
       });
 
-      timeoutId = setTimeout(function nextNode() {
+      function play(){
+        paused = false;
+        nextNode();
+      };
+
+      function nextNode() {
+        if(paused) return;
         lastNode && container.removeChild(lastNode);
         var nextIdx = incrememntNodeIdx();
         if(nextIdx >= nodes.length) return;
         lastNode = nodes[nextIdx];
+        lastNode.style.visibility = 'hidden';
         container.appendChild(lastNode);
         lastNode.center();
+        lastNode.style.visibility = 'visible';
         lastChar = lastNode.word[lastNode.word.length - 1];
-        delay = lastChar == '.' ? waitAfterPeriod :
-          lastChar == ',' ? waitAfterComma :
-          lastChar == ':' ? waitAfterComma :
+        delay = '.!?'.indexOf(lastChar) != -1 ? waitAfterPeriod :
+          ',;:'.indexOf(lastChar) != -1 ? waitAfterComma :
           jumped ? waitAfterPeriod : 1;
         jumped = false;
-        if(lastNode.word == "Mr." || lastNode.word == "Mrs." || lastNode.word == "Ms.") delay = 1;
+        if(lastNode.word == "Mr." ||
+            lastNode.word == "Mrs." ||
+            lastNode.word == "Ms.") delay = 1;
         timeoutId = setTimeout(nextNode, ms * delay)
-      }, ms);
+      };
+
+      play();
     };
 
   };
 
   function makeTextToNodes(wordToNode) {
     return function textToNodes(text) {
+      text = "3. 2. 1. " + text;
       return text.replace('\n', ' ').split(' ')
       // handle "...end of one.Next sentence..."
       // due to using textContent to extract -- does not add newlines
@@ -179,14 +191,13 @@ var squirt = {};
   }
 
   function makeGUI(){
-
     var squirt = makeDiv({id: 'squirt'}, document.body);
     squirt.style.display = 'none';
-    document.addEventListener('squirt.close', hideGUI);
+    on('squirt.close', hideGUI);
 
     var obscure = makeDiv({class: 'obscure'}, squirt);
     obscure.onclick = function(){
-      document.dispatchEvent(new Event('squirt.close'));
+      dispatch('squirt.close');
     };
 
     var squirtWin = makeDiv({'class': 'squirt-modal'}, squirt);
@@ -197,52 +208,87 @@ var squirt = {};
 
     (function make(controls){
 
+      // this is suffering from delirium
       (function makeWPMSelect(){
-        var wpmSelect = document.createElement('select');
-        for(var wpm = 200; wpm < 1050; wpm += 50){
-          var opt = document.createElement('option');
-          opt.value = wpm;
-          opt.text = wpm;
-          wpm == 400 && (opt.selected = true);
-          wpmSelect.add(opt);
-        };
-        wpmSelect.setAttribute('id', 'wpm');
-        wpmSelect.onchange = function(evt){
-          var e = new Event("squirt.wpm");
-          e.value = evt.target.value;
-          document.dispatchEvent(e);
-        };
-        controls.appendChild(wpmSelect);
 
-        (["You're reading at", "words per minute."]).map(function(txt, idx){
-          var label = document.createElement('label');
-          label.textContent = txt;
-          controls[idx ? 'appendChild' : 'insertBefore'](label, wpmSelect);
+        // create the ever-present left-hand side button
+        var container = makeDiv({'class': 'wpm control'}, controls);
+        var wpmLink = makeEl('a', {}, container);
+        wpmLink.data = { wpm: 400 };
+        bind("=wpm WPM", wpmLink.data, wpmLink);
+        on('squirt.wpm', function(e){
+          wpmLink.data.wpm = e.value;
+          wpmLink.render();
         });
+        // create the custom selector
+        var wpmSelector = makeDiv({'class': 'wpm-selector'}, controls);
+        wpmSelector.style.display = 'none';
+        var plus50OptData = {add: 50, sign: "+"};
+        var datas = [];
+        for(var wpm = 200; wpm < 1000; wpm += 100){
+          var opt = makeDiv({'class': 'wpm-option'}, wpmSelector);
+          var a = makeEl('a', {}, opt);
+          a.data = { baseWPM: wpm };
+          a.data.__proto__ = plus50OptData;
+          datas.push(a.data);
+          bind("=wpm",  a.data, a);
+          opt.onclick = function(e){
+            dispatch('squirt.wpm', {value: e.target.firstChild.data.wpm});
+            wpmSelector.style.display = 'none';
+          };
+        };
+
+        // create the last option for the custom selector
+        var plus50Opt = makeDiv({'class': 'wpm-option plus-50'}, wpmSelector);
+        var a = makeEl('a', {}, plus50Opt);
+        bind("=sign 50", plus50OptData, a);
+        plus50Opt.onclick = function(){
+          datas.map(function(data){
+            data.wpm = data.baseWPM + data.add;
+          });
+          var toggle = plus50OptData.sign == '+';
+          plus50OptData.sign = toggle ? '-' : '+';
+          plus50OptData.add = toggle ? 0 : 50;
+          dispatch('squirt.els.render');
+        };
+        plus50Opt.onclick();
+        container.onclick = function(){
+          toggle(wpmSelector);
+        };
       })();
 
-      (function makeJumpLinks(){
-        var jumps = document.createElement('div');
-        jumps.classList.add('jump-links');
-        var label = document.createElement('label');
-        label.textContent = 'Jump back: ';
-        jumps.appendChild(label);
-        ([["Beginning",-1],
-          ["8s", 8],
-          ["16s", 16],
-          ["30s", 30]]).map(function(link){
-            var a = document.createElement('a');
-            a.href = '#';
-            a.onclick = function(clickEvt){
-              var e = new Event('squirt.jump-back');
-              e.value = link[1];
-              document.dispatchEvent(e);
-              clickEvt.preventDefault();
-            };
-            a.textContent = link[0];
-            jumps.appendChild(a);
-          });
-        controls.appendChild(jumps);
+      (function makeRewind(){
+        var container = makeEl('div', {'class': 'rewind control'}, controls);
+        var a = makeEl('a', {}, container);
+        a.href = '#';
+        container.onclick = function(e){
+          dispatch('squirt.rewind', {value: 10});
+          e.preventDefault();
+        };
+        a.innerHTML = "<i class='fa fa-backward'></i> 10s";
+      })();
+
+      (function makePause(){
+        var container = makeEl('div', {'class': 'pause control'}, controls);
+        var paused = false;
+        var a = makeEl('a', {'href': '#'}, container);
+        var pauseIcon = "<i class='fa fa-pause'></i>";
+        var playIcon = "<i class='fa fa-play'></i>";
+        function updateIcon(){
+          a.innerHTML = paused ? playIcon : pauseIcon;
+        }
+        container.onclick = function(clickEvt){
+          if(paused){
+            paused = false;
+            dispatch('squirt.play');
+          } else {
+            paused = true;
+            dispatch('squirt.pause');
+          }
+          updateIcon();
+          clickEvt.preventDefault();
+        };
+        updateIcon();
       })();
     })(controls);
   };
@@ -262,7 +308,50 @@ var squirt = {};
     return el;
   };
 
+  // data binding... *cough*
+  function bind(expr, data, el){
+    el.render = render.bind(null, expr, data, el);
+    return on('squirt.els.render', function(){
+      el.render();
+    });
+  };
+
+  function render(expr, data, el){
+    var match, rendered = expr;
+    expr.match(/=[^ =]+/g).map(function(match){
+      rendered = rendered.replace(match, data[match.substr(1)]);
+    });
+    el.textContent = rendered;
+  };
+
   function makeDiv(attrs, parent){
     return makeEl('div', attrs, parent);
   };
+
+  function injectStylesheet(url){
+    makeEl('link', {
+      rel: 'stylesheet',
+      href: url,
+      type: 'text/css'
+    }, document.head);
+  }
+
+  function on(evt, cb){
+    return document.addEventListener(evt, cb);
+  };
+
+  function dispatch(evt, attrs, dispatcher){
+    var evt = new Event(evt);
+    for(var k in attrs){
+      if(!attrs.hasOwnProperty(k)) continue
+      evt[k] = attrs[k];
+    }
+    (dispatcher || document).dispatchEvent(evt);
+  };
+
+  function toggle(el){
+    var s = el.style;
+    s.display = s.display == 'none' ? 'block' : 'none';
+  }
+
 })();
