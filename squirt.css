@@ -152,6 +152,10 @@ and (orientation: landscape){
  } 
 
  .control {
-  height: 32.3%;
+   height: 32.3%;
+ }
+
+ .wpm-option {
+   height: 32.3%;
  }
 }

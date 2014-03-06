@@ -252,9 +252,7 @@ var squirt = {};
           dispatch('squirt.els.render');
         };
         plus50Opt.onclick();
-        container.onclick = function(){
-          toggle(wpmSelector);
-        };
+        container.onclick = toggle.bind(null, wpmSelector);
       })();
 
       (function makeRewind(){
