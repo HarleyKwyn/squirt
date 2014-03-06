@@ -49,9 +49,9 @@ var squirt = {};
       var waitAfterComma = 2;
       var waitAfterPeriod = 3;
       var lastChar, delay;
-      var container = document.querySelector('.word-center');
+      var container = document.querySelector('.sq-word-center');
       map(container.children, function(child){
-        child.classList.contains('word') && child.remove();
+        child.classList.contains('sq-word') && child.remove();
       });
       var jumped = false;
       var postJumpDelay = 1;
@@ -118,7 +118,6 @@ var squirt = {};
 
       play();
     };
-
   };
 
   function makeTextToNodes(wordToNode) {
@@ -139,10 +138,10 @@ var squirt = {};
              .filter(function(word){ return word.length; })
              .map(wordToNode);
     };
-  }
+  };
 
   function wordToNode(word) {
-    var node = makeDiv({'class': 'word'});
+    var node = makeDiv({'class': 'sq-word'});
     var span;
 
     var centerOnCharIdx =
@@ -154,7 +153,7 @@ var squirt = {};
     word.split('').map(function(char, idx) {
       span = makeEl('span', {}, node);
       span.textContent = char;
-      if(idx == centerOnCharIdx) span.classList.add('orp');
+      if(idx == centerOnCharIdx) span.classList.add('sq-orp');
     });
 
     node.center = function() {
@@ -164,7 +163,6 @@ var squirt = {};
     }
     node.word = word;
     return node;
-
   };
 
   function showGUI(){
@@ -180,13 +178,13 @@ var squirt = {};
   function blur(){
     map(document.body.children, function(node){
       if(node.id != 'squirt')
-        node.classList.add('squirt-blur');
+        node.classList.add('sq-blur');
     });
   };
 
   function unblur(){
     map(document.body.children, function(node){
-      node.classList.remove('squirt-blur');
+      node.classList.remove('sq-blur');
     });
   }
 
@@ -195,16 +193,16 @@ var squirt = {};
     squirt.style.display = 'none';
     on('squirt.close', hideGUI);
 
-    var obscure = makeDiv({class: 'obscure'}, squirt);
+    var obscure = makeDiv({class: 'sq-obscure'}, squirt);
     obscure.onclick = function(){
       dispatch('squirt.close');
     };
 
-    var squirtWin = makeDiv({'class': 'squirt-modal'}, squirt);
-    var port = makeDiv({'class': 'word-port'}, squirtWin);
-    var container = makeDiv({'class': 'word-center'}, port);
-    var indicator = makeDiv({'class': 'focus-indicator'}, container);
-    var controls = makeDiv({'class':'controls'}, squirtWin);
+    var squirtWin = makeDiv({'class': 'sq-modal'}, squirt);
+    var port = makeDiv({'class': 'sq-word-port'}, squirtWin);
+    var container = makeDiv({'class': 'sq-word-center'}, port);
+    var indicator = makeDiv({'class': 'sq-focus-indicator'}, container);
+    var controls = makeDiv({'class':'sq-controls'}, squirtWin);
 
     (function make(controls){
 
@@ -212,7 +210,7 @@ var squirt = {};
       (function makeWPMSelect(){
 
         // create the ever-present left-hand side button
-        var container = makeDiv({'class': 'wpm control'}, controls);
+        var container = makeDiv({'class': 'sq-wpm sq-control'}, controls);
         var wpmLink = makeEl('a', {}, container);
         wpmLink.data = { wpm: 400 };
         bind("=wpm WPM", wpmLink.data, wpmLink);
@@ -221,12 +219,12 @@ var squirt = {};
           wpmLink.render();
         });
         // create the custom selector
-        var wpmSelector = makeDiv({'class': 'wpm-selector'}, controls);
+        var wpmSelector = makeDiv({'class': 'sq-wpm-selector'}, controls);
         wpmSelector.style.display = 'none';
         var plus50OptData = {add: 50, sign: "+"};
         var datas = [];
         for(var wpm = 200; wpm < 1000; wpm += 100){
-          var opt = makeDiv({'class': 'wpm-option'}, wpmSelector);
+          var opt = makeDiv({'class': 'sq-wpm-option'}, wpmSelector);
           var a = makeEl('a', {}, opt);
           a.data = { baseWPM: wpm };
           a.data.__proto__ = plus50OptData;
@@ -234,12 +232,13 @@ var squirt = {};
           bind("=wpm",  a.data, a);
           opt.onclick = function(e){
             dispatch('squirt.wpm', {value: e.target.firstChild.data.wpm});
+            dispatch('squirt.play');
             wpmSelector.style.display = 'none';
           };
         };
 
         // create the last option for the custom selector
-        var plus50Opt = makeDiv({'class': 'wpm-option plus-50'}, wpmSelector);
+        var plus50Opt = makeDiv({'class': 'sq-wpm-option sq-plus-50'}, wpmSelector);
         var a = makeEl('a', {}, plus50Opt);
         bind("=sign 50", plus50OptData, a);
         plus50Opt.onclick = function(){
@@ -252,11 +251,14 @@ var squirt = {};
           dispatch('squirt.els.render');
         };
         plus50Opt.onclick();
-        container.onclick = toggle.bind(null, wpmSelector);
+        container.onclick = function(){
+          toggle(wpmSelector);
+          dispatch('squirt.play');
+        }
       })();
 
       (function makeRewind(){
-        var container = makeEl('div', {'class': 'rewind control'}, controls);
+        var container = makeEl('div', {'class': 'sq-rewind sq-control'}, controls);
         var a = makeEl('a', {}, container);
         a.href = '#';
         container.onclick = function(e){
@@ -267,7 +269,7 @@ var squirt = {};
       })();
 
       (function makePause(){
-        var container = makeEl('div', {'class': 'pause control'}, controls);
+        var container = makeEl('div', {'class': 'sq-pause sq-control'}, controls);
         var paused = false;
         var a = makeEl('a', {'href': '#'}, container);
         var pauseIcon = "<i class='fa fa-pause'></i>";

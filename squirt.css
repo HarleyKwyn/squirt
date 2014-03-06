@@ -1,4 +1,4 @@
-.squirt-blur {
+.sq-blur {
   filter: blur(4px);
   -webkit-filter: blur(4px);
   -moz-filter: blur(4px);
@@ -6,7 +6,7 @@
   -ms-filter: blur(4px); 
 }
 
-.obscure {
+.sq-obscure {
   background-color: rgba(255, 255, 255, .8);
   position: fixed;
   width: 100%;
@@ -16,7 +16,7 @@
   z-index: 9999999999999999999999;
 }
 
-.squirt-modal {
+.sq-modal {
   position: fixed;
   left: 0;
   top: 30%;
@@ -32,31 +32,31 @@
   z-index: 99999999999999999999999;
 }
 
-.word-port {
+.sq-word-port {
     width: 80%;
     height: 100%;
     margin: 0;
     padding: 0;
 }
 
-.word-center {
+.sq-word-center {
   position: absolute;
   left: 35%;
   top: 34%;
   height: 100%
 }
 
-.focus-indicator {
+.sq-focus-indicator {
   border-left: 1px solid rgba(0,0,0, .4);
   position: absolute;
   width: 1px;
   display: block;
-  height: 100%;
-  top: -34%;
+  height: 64%;
+  top: -20%;
   border-color: rgba(0,0,0, .2);
 }
 
-.controls {
+.sq-controls {
   font-family: "Helvetica Neue", "Arial", sans-serif;
   font-size: 40%;
   text-align: center;
@@ -69,31 +69,31 @@
   top: 0;
 }
 
-.control {
+.sq-control {
   cursor: pointer;
   margin: 0;
   background-color: rgba(255, 255, 255, .8);
-  height: 130px;
+  height: 74px;
+  padding-top: 57px;
   margin-bottom: 3px;
 }
 
-.control:hover {
+.sq-control:hover {
   background-color: rgba(255, 255, 255, 1);
 }
 
-.control:active {
+.sq-control:active {
   background-color: rgba(255, 255, 255, .6);
 }
 
-.controls a, select{
+.sq-controls a, select{
   text-decoration: none;
   color: inherit;
   display:block;
-  margin: 57px auto;
   cursor: pointer;
 }
 
-.wpm-selector {
+.sq-wpm-selector {
   height: 100%;
   position: absolute;
   top:0;
@@ -101,7 +101,7 @@
   width: 401%;
 }
 
-.wpm-option {
+.sq-wpm-option {
   margin: 0 .5% .5% 0;
   width: 32.75%; 
   height: 32.7%;
@@ -110,29 +110,30 @@
   cursor: pointer;
 }
 
-.wpm-option:hover, .wpm-option:active {
+.sq-wpm-option:hover, .sq-wpm-option:active {
   background-color: #EFEFEF;
 }
 
-.wpm-option a {
+.sq-wpm-option a {
   margin: 22.3% auto;
   pointer-events: none;
   font-size: 1.4em;
 }
 
-.control.wpm div{
+.sq-control.sq-wpm div{
   font-size: .8em;
 }
 
-.orp{
+.sq-orp{
   color: rgb(238, 69, 69);
 }
 
-.word{
+.sq-word{
   position: absolute;
   font-size: 1.2em;
   background-color: #F6F6F6;
   padding: 15px;
+  box-shadow: 0px 0px 100px #F6F6F6;
 }
 
 /* Mobile */
@@ -141,7 +142,7 @@
 and (min-device-width : 320px) 
 and (max-device-width : 568px) 
 and (orientation: landscape){
- .squirt-modal {
+ .sq-modal {
    border-radius: 0;
    width: 100%;
    height: 80%;
@@ -149,11 +150,74 @@ and (orientation: landscape){
    left: 0;
  } 
 
- .control {
-   height: 32.3%;
+ .sq-focus-indicator {
+   height: 84%;
+   top: -26%;
  }
 
- .wpm-option {
+ .sq-control {
+   height: 52px;
+   padding-top:31px;
+   font-size: .9em;
+ }
+
+ .sq-wpm-option {
    height: 32.3%;
+ }
+ .sq-wpm-option a{
+   margin-top: 19.3%;
+ }
+}
+
+@media only screen 
+and (min-device-width : 320px) 
+and (max-device-width : 568px) 
+and (orientation: portrait){
+ .sq-modal {
+   border-radius: 0;
+   width: 100%;
+   height: 80%;
+   top: 20%;
+   left: 0;
+ } 
+
+ .sq-word-center {
+   left: 47%;
+   top: 16%;
+ }
+
+ .sq-focus-indicator {
+   top: -11%;
+   height: 35%;
+ }
+
+ .sq-wpm-selector {
+   left: 0;
+   top:-44%;
+   width: 100%;
+   background-color: #f6f6f6;
+ }
+
+ .sq-controls {
+   top: 44%;
+   width: 100%;
+   left: 0;
+ }
+
+ .sq-control {
+   height: 52px;
+   padding-top:31px;
+   font-size: .9em;
+ }
+
+ .sq-wpm-option {
+   height: 32.3%;
+ }
+ .sq-wpm-option a{
+   margin-top: 19.3%;
+ }
+
+ .sq-word {
+   font-size: .7em;
  }
 }
