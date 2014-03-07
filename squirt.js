@@ -279,6 +279,7 @@ var squirt = null;
           plus50OptData.add = toggle ? 0 : 50;
           dispatch('squirt.els.render');
         });
+        dispatch('click', {}, plus50Opt);
       })();
 
       (function makeRewind(){
