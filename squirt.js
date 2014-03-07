@@ -1,15 +1,19 @@
-var squirt = {};
+var squirt = null;
 (function(){
+  var sq = {};
   (function makeSquirt(read, makeGUI) {
-    var host = window.location.hostname == 'localhost' ? '/' :
+    var host = window.location.search.indexOf('sq-dev') ? '/' :
       '//rawgithub.com/cameron/squirt/master/';
 
-    injectStylesheet(host + 'squirt.css')
+    makeEl('meta', {'apple-mobile-web-app-capable': 'yes'}, document.head);
+    var ss = injectStylesheet(host + 'squirt.css')
     injectStylesheet('//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css');
-    makeGUI();
-    startSquirt();
 
     on('squirt.again', startSquirt);
+    on(ss, 'load', function(){
+      makeGUI();
+      startSquirt();
+    })
 
     function startSquirt(){
       showGUI();
@@ -25,7 +29,7 @@ var squirt = {};
       }
       function readabilize(){ read(readability.grabArticle().textContent); }
       if(!window.readability){
-        makeEl('script', {
+        var script = makeEl('script', {
           src: host + 'readability.js'
         }, document.head);
         return on('readability.ready', readabilize);
@@ -36,7 +40,8 @@ var squirt = {};
 
   function makeRead(textToNodes) {
     return function read(text) {
-      scrollTo(document.body, 1);
+      var t = new Date();
+      window.started = t.getTime();
       var nodes = textToNodes(text);
       var lastNode = null;
       var timeoutId;
@@ -45,18 +50,20 @@ var squirt = {};
         var ret = nodeIdx;
         nodeIdx += increment || 1;
         nodeIdx = Math.max(0, nodeIdx);
+        prerender();
         return ret;
       }
       var waitAfterComma = 2;
       var waitAfterPeriod = 3;
       var lastChar, delay;
       var container = document.querySelector('.sq-word-center');
+      var prerenderer = makeDiv({'class': 'sq-word-prerenderer'}, container);
       map(container.children, function(child){
         child.classList.contains('sq-word') && child.remove();
       });
       var jumped = false;
       var postJumpDelay = 1;
-      var paused = false;
+      sq.paused = false;
 
       on('squirt.close', function(){
         clearTimeout(timeoutId);
@@ -67,14 +74,20 @@ var squirt = {};
         ms = 60 * 1000 / wpm ;
       }
       on('squirt.wpm', function(e){
+        sq.wpm = e.value
         wpm(e.value);
+        dispatch('squirt.wpm.after');
       });
 
       on('squirt.pause', function(){
-        paused = true;
+        dispatch('squirt.play', {value: false});
       });
 
       on('squirt.play', play);
+
+      on('squirt.play.toggle', function(){
+        dispatch('squirt.play', {value: sq.paused});
+      });
 
       dispatch('squirt.wpm', {value: 400});
 
@@ -89,46 +102,59 @@ var squirt = {};
           }
           nodeIdx != 0 && incrememntNodeIdx();
         }
+        jumped = true;
       });
 
-      function play(){
-        paused = false;
-        nextNode();
+      function play(e){
+        sq.paused = e.value === undefined ? false : !e.value;
+        !sq.paused && nextNode();
+        dispatch('squirt.play.after');
       };
 
+      function prerender(){
+        prerenderer.appendChild(nodes[nodeIdx]);
+        nodes[nodeIdx].center();
+      }
+
       function nextNode() {
-        if(paused) return;
-        lastNode && container.removeChild(lastNode);
+        if(sq.paused) return;
+        lastNode && lastNode.remove();
         var nextIdx = incrememntNodeIdx();
         if(nextIdx >= nodes.length) return;
         lastNode = nodes[nextIdx];
-        lastNode.style.visibility = 'hidden';
         container.appendChild(lastNode);
-        lastNode.center();
-        lastNode.style.visibility = 'visible';
-        lastChar = lastNode.word[lastNode.word.length - 1];
-        delay = '.!?'.indexOf(lastChar) != -1 ? waitAfterPeriod :
-          ',;:'.indexOf(lastChar) != -1 ? waitAfterComma :
-          jumped ? waitAfterPeriod : 1;
+        delay = getDelay(lastNode, jumped);
         jumped = false;
-        if(lastNode.word == "Mr." ||
-            lastNode.word == "Mrs." ||
-            lastNode.word == "Ms.") delay = 1;
-        timeoutId = setTimeout(nextNode, ms * delay)
+        nodeIdx != nodes.length && (timeoutId = setTimeout(nextNode, ms * delay))
       };
 
-      play();
+      function getDelay(node, jumped){
+        if(jumped) return waitAfterPeriod;
+        if(lastNode.word == "Mr." ||
+            lastNode.word == "Mrs." ||
+            lastNode.word == "Ms.") return 1;
+        var lastChar = node.word[node.word.length - 1];
+        if('.!?'.indexOf(lastChar) != -1) return waitAfterPeriod;
+        if(',;:'.indexOf(lastChar) != -1) return waitAfterComma;
+        return 1;
+      };
+
+      prerender();
+      dispatch('squirt.play');
     };
   };
 
   function makeTextToNodes(wordToNode) {
     return function textToNodes(text) {
       text = "3. 2. 1. " + text;
+      var words, node
       return text.replace('\n', ' ').split(' ')
-      // handle "...end of one.Next sentence..."
-      // due to using textContent to extract -- does not add newlines
              .map(function(word){
-               var words = word.split('.');
+               // handle "...end of one.Next sentence..."
+               // due to using textContent to extract -- does not add newlines.
+               // E.g., <p>this is a sentence.</p><p>Followed...</p> will return
+               // "...sentence.Followed..."
+               words = word.split('.');
                if(words.length > 1) words[0] += '.';
                if(words.length > 1 && !words[1].length) words.pop();
                return words;
@@ -157,8 +183,8 @@ var squirt = {};
       if(idx == centerOnCharIdx) span.classList.add('sq-orp');
     });
 
+    var centerOnSpan = node.children[centerOnCharIdx];
     node.center = function() {
-      var centerOnSpan = node.children[centerOnCharIdx];
       var val = centerOnSpan.offsetLeft + (centerOnSpan.offsetWidth / 2);
       node.style.left = "-" + val + "px";
     }
@@ -195,9 +221,9 @@ var squirt = {};
     on('squirt.close', hideGUI);
 
     var obscure = makeDiv({class: 'sq-obscure'}, squirt);
-    obscure.onclick = function(){
+    on(obscure, 'click', function(){
       dispatch('squirt.close');
-    };
+    });
 
     var squirtWin = makeDiv({'class': 'sq-modal'}, squirt);
     var port = makeDiv({'class': 'sq-word-port'}, squirtWin);
@@ -207,18 +233,20 @@ var squirt = {};
 
     (function make(controls){
 
-      // this is suffering from delirium
+      // this code is suffering from delirium
       (function makeWPMSelect(){
 
         // create the ever-present left-hand side button
-        var container = makeDiv({'class': 'sq-wpm sq-control'}, controls);
-        var wpmLink = makeEl('a', {}, container);
-        wpmLink.data = { wpm: 400 };
-        bind("=wpm WPM", wpmLink.data, wpmLink);
-        on('squirt.wpm', function(e){
-          wpmLink.data.wpm = e.value;
-          wpmLink.render();
+        var control = makeDiv({'class': 'sq-wpm sq-control'}, controls);
+        var wpmLink = makeEl('a', {}, control);
+        bind("=wpm WPM", sq, wpmLink);
+        on('squirt.wpm.after', wpmLink.render);
+        on(control, 'click', function(){
+          toggle(wpmSelector) ?
+            dispatch('squirt.pause') :
+            dispatch('squirt.play');
         });
+
         // create the custom selector
         var wpmSelector = makeDiv({'class': 'sq-wpm-selector'}, controls);
         wpmSelector.style.display = 'none';
@@ -231,18 +259,18 @@ var squirt = {};
           a.data.__proto__ = plus50OptData;
           datas.push(a.data);
           bind("=wpm",  a.data, a);
-          opt.onclick = function(e){
+          on(opt, 'click', function(e){
             dispatch('squirt.wpm', {value: e.target.firstChild.data.wpm});
             dispatch('squirt.play');
             wpmSelector.style.display = 'none';
-          };
+          });
         };
 
         // create the last option for the custom selector
         var plus50Opt = makeDiv({'class': 'sq-wpm-option sq-plus-50'}, wpmSelector);
         var a = makeEl('a', {}, plus50Opt);
         bind("=sign 50", plus50OptData, a);
-        plus50Opt.onclick = function(){
+        on(plus50Opt, 'click', function(){
           datas.map(function(data){
             data.wpm = data.baseWPM + data.add;
           });
@@ -250,45 +278,33 @@ var squirt = {};
           plus50OptData.sign = toggle ? '-' : '+';
           plus50OptData.add = toggle ? 0 : 50;
           dispatch('squirt.els.render');
-        };
-        plus50Opt.onclick();
-        container.onclick = function(){
-          toggle(wpmSelector);
-          dispatch('squirt.play');
-        }
+        });
       })();
 
       (function makeRewind(){
         var container = makeEl('div', {'class': 'sq-rewind sq-control'}, controls);
         var a = makeEl('a', {}, container);
         a.href = '#';
-        container.onclick = function(e){
+        on(container, 'click', function(e){
           dispatch('squirt.rewind', {value: 10});
           e.preventDefault();
-        };
+        });
         a.innerHTML = "<i class='fa fa-backward'></i> 10s";
       })();
 
       (function makePause(){
         var container = makeEl('div', {'class': 'sq-pause sq-control'}, controls);
-        var paused = false;
         var a = makeEl('a', {'href': '#'}, container);
         var pauseIcon = "<i class='fa fa-pause'></i>";
         var playIcon = "<i class='fa fa-play'></i>";
         function updateIcon(){
-          a.innerHTML = paused ? playIcon : pauseIcon;
+          a.innerHTML = sq.paused ? playIcon : pauseIcon;
         }
-        container.onclick = function(clickEvt){
-          if(paused){
-            paused = false;
-            dispatch('squirt.play');
-          } else {
-            paused = true;
-            dispatch('squirt.pause');
-          }
-          updateIcon();
+        on('squirt.play.after', updateIcon);
+        on(container, 'click', function(clickEvt){
+          dispatch('squirt.play.toggle');
           clickEvt.preventDefault();
-        };
+        });
         updateIcon();
       })();
     })(controls);
@@ -296,6 +312,7 @@ var squirt = {};
 
   // utilites
   function map(listLike, f){
+    listLike = Array.prototype.slice.call(listLike); // for safari
     return Array.prototype.map.call(listLike, f);
   }
 
@@ -320,7 +337,8 @@ var squirt = {};
   function render(expr, data, el){
     var match, rendered = expr;
     expr.match(/=[^ =]+/g).map(function(match){
-      rendered = rendered.replace(match, data[match.substr(1)]);
+      var val = data[match.substr(1)];
+      rendered = rendered.replace(match, val == undefined ? '' : val);
     });
     el.textContent = rendered;
   };
@@ -330,15 +348,23 @@ var squirt = {};
   };
 
   function injectStylesheet(url){
-    makeEl('link', {
+    return makeEl('link', {
       rel: 'stylesheet',
       href: url,
       type: 'text/css'
     }, document.head);
-  }
+  };
 
-  function on(evt, cb){
-    return document.addEventListener(evt, cb);
+  function on(bus, evts, cb){
+    if(cb === undefined){
+      cb = evts;
+      evts = bus;
+      bus = document;
+    }
+    evts = typeof evts == 'string' ? [evts] : evts;
+    return evts.map(function(evt){
+      return bus.addEventListener(evt, cb);
+    });
   };
 
   function dispatch(evt, attrs, dispatcher){
@@ -352,7 +378,6 @@ var squirt = {};
 
   function toggle(el){
     var s = el.style;
-    s.display = s.display == 'none' ? 'block' : 'none';
+    return (s.display = s.display == 'none' ? 'block' : 'none') == 'block';
   }
-
 })();
