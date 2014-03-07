@@ -8,6 +8,7 @@ git checkout gh-pages
 cp /tmp/squirt.js squirt.js
 cp /tmp/squirt.css squirt.css
 
+git add .
 git commit -am "updated sources from master"
 git push
 git checkout master
