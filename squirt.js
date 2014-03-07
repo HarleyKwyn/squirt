@@ -2,7 +2,7 @@ var squirt = null;
 (function(){
   var sq = {};
   (function makeSquirt(read, makeGUI) {
-    var host = window.location.search.indexOf('sq-dev') ? '/' :
+    var host = window.location.search.indexOf('sq-dev') != -1 ? '/' :
       '//rawgithub.com/cameron/squirt/master/';
 
     makeEl('meta', {'apple-mobile-web-app-capable': 'yes'}, document.head);
