@@ -1,0 +1,13 @@
+#! /bin/zsh
+
+cp squirt.js /tmp
+cp squirt.css /tmp
+
+git checkout gh-pages
+
+cp /tmp/squirt.js squirt.js
+cp /tmp/squirt.css squirt.css
+
+git commit -am "updated sources from master"
+git push
+git checkout master
