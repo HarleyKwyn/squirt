@@ -1,4 +1,3 @@
-var squirt = null;
 (function(){
   var sq = {};
   (function makeSquirt(read, makeGUI) {
@@ -40,8 +39,6 @@ var squirt = null;
 
   function makeRead(textToNodes) {
     return function read(text) {
-      var t = new Date();
-      window.started = t.getTime();
       var nodes = textToNodes(text);
       var lastNode = null;
       var timeoutId;
@@ -222,6 +219,7 @@ var squirt = null;
 
     var obscure = makeDiv({class: 'sq-obscure'}, squirt);
     on(obscure, 'click', function(){
+      window.squirted = null;
       dispatch('squirt.close');
     });
 
