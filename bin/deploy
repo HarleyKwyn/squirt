@@ -1,12 +1,23 @@
-#! /bin/zsh
+#! /bin/bash
+
+set -e
 
 cp squirt.js /tmp
 cp squirt.css /tmp
+cp bookmarklet.js /tmp
+cp readability.js /tmp
 
 git checkout gh-pages
 
-cp /tmp/squirt.js squirt.js
-cp /tmp/squirt.css squirt.css
+cp /tmp/squirt.js .
+cp /tmp/squirt.css .
+cp /tmp/readability.js .
+
+echo "javascript:$(cat /tmp/bookmarklet.js)" > bookmarklet.js
+BM=$(cat bookmarklet.js | tr -d '\n' | sed -e 's/[\/&]/\\&/g')
+sed -i.bu "s/<pre>.*<\/pre>/<pre>$BM<\/pre>/" _includes/mobile.md
+sed -i.bu "s/<a href=\".*\">link's URL<\/a>/<a href=\"$BM\">link's URL<\/a>/" _includes/mobile.md
+sed -i.bu "s/<a href=\".*\">Squirt<\/a>/<a href=\"$BM\">Squirt<\/a>/" _includes/index.md
 
 git commit -am "updated sources from master"
 git push
