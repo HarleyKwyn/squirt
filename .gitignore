@@ -1,5 +1,2 @@
-*.pyc
-.*.sw[op]
-*.log
-id_rsa*
-server/docs
+_site
+_includes
